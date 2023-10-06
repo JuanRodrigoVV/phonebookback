@@ -1,0 +1,42 @@
+GET http://localhost:3001/api/notes
+
+###
+
+
+POST http://localhost:3001/api/notes
+Content-Type: application/json
+
+
+{
+    "content": "johny tolengo es",
+    "important": true
+}
+
+###
+
+GET http://localhost:3002/info
+###
+
+GET http://localhost:3002/api/persons
+
+###
+
+GET http://localhost:3002/api/persons/1
+
+###
+DELETE http://localhost:3002/api/persons/4
+
+
+###
+POST http://localhost:3002/api/persons
+Content-Type: application/json
+
+{   
+    
+    "name": "new Name4453",
+    "number": "123"
+}
+
+###
+
+GET http://localhost:3002/api/john
