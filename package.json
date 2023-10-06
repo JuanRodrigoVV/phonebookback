@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "build:ui": "rm -rf dist && cd \"/Users/rodrigovargas123/Documents/Programacion/Fullstack/Part2/the phonebook\" && npm run build && cp -r dist /Users/rodrigovargas123/Documents/Programacion/Fullstack/Part3"
+
   },
   "author": "",
   "license": "ISC",
