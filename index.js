@@ -1,34 +1,12 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 app.use(express.json())
 var morgan = require('morgan')
 const cors = require('cors')
 app.use(express.static('dist'))
-
-
-
-let persons = [
-    { 
-      "id": 1,
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": 2,
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": 3,
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": 4,
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
+const User = require('./models/users')
+const { response } = require('express')
 
 
 morgan.token('body', ((req) => JSON.stringify(req.body)))
@@ -44,62 +22,91 @@ app.listen(PORT, () => {
     console.log(`App listening on Port: ${PORT}`)
 })
 
-app.get(`/`, (req, res) => {
-    res.send('<h1>Welcome to Persons</h1>')
-})
+
 
 
 app.get('/api/persons', (req, res) => {
-    res.json(persons)
-})
-
-
-
-app.get('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    const person = persons.find(per => per.id === id)
-    if (person) {
+    User.find({}).then(person => {
         res.json(person)
-    } else { 
-        return res.status(404).end()
-    }
+      })
 })
+
+
+app.get('/api/persons/:id', (req, res, next) => {
+    User.findById(req.params.id)
+    .then(note => {
+      if (note) {
+        res.json(note)
+      } else {
+        res.status(404).end()
+      }
+    })
+    .catch(error => next(error))
+})
+
+
+
 
 app.get('/info', (req, res) => {
     const currentDate = new Date();
-    res.send(`Ponebook has info for ${persons.length} persons <br/>
-    Date: ${currentDate}`)
+    User.find({}).then(person => {
+      res.send(`Ponebook has info for ${person.length} persons <br/>
+      // Date: ${currentDate}`)
+    })
+
 })
 
 
-app.delete('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    persons = persons.filter(note => note.id !== id)
-    res.status(204).end()
+app.delete('/api/persons/:id', (req, res, next) => {
+    User.findByIdAndRemove(req.params.id)
+    .then(result => {
+        res.status(204).end()
+    })
+    .catch(error => next(error))
+})
+
+
+app.put('/api/persons/:id', (request, response, next) => {
+  const {name, number} = request.body
+
+  const user = {
+    name: body.name,
+    number: body.number,
+  }
+
+  User.findByIdAndUpdate(request.params.id, { name, number }, { new: true, runValidators: true, context: 'query' })
+    .then(updatedUser => {
+      response.json(updatedUser)
+    })
+    .catch(error => next(error))
 })
 
 
 
-const generateId = () => {
-    return Math.floor(Math.random() * 10000)
-}
-
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
     const body = req.body 
-    const name = persons.find(per => per.name.toUpperCase() === body.name.toUpperCase())
     if (!body.name || !body.number) { 
         return res.status(400).json({error: "You are missing some content"}) 
-    } else if (name) {
-       return res.status(403).json(' the name is already in the list')
-    }
-    const person = {
+    } else 
+    {const person = new User({
             name: body.name,
             number: body.number,
-            id: generateId(),
-        }
-        persons = persons.concat(person)
-        res.json(person)
+
+        })
+    person.save().then(savedPerson => {
+        res.json(savedPerson)
+    })
+    .catch(error => next(error))
+  }
     
+    
+    
+})
+
+
+app.put('/api/persons/:id', (req, res) => {
+    res.status(101)
+
 })
 
 
@@ -124,5 +131,21 @@ const unknownEndpoint = (request, response) => {
   
   app.use(unknownEndpoint)
 
+
+
+  const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+  
+    if (error.name === 'CastError') {
+      return response.status(400).send({ error: 'malformatted id' })
+    } else if (error.name === 'ValidationError') {
+      return response.status(400).send({error: error.message})
+    }
+  
+    next(error)
+  }
+  
+  // this has to be the last loaded middleware.
+  app.use(errorHandler)
 
 

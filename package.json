@@ -8,14 +8,15 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon index.js",
     "build:ui": "rm -rf dist && cd \"/Users/rodrigovargas123/Documents/Programacion/Fullstack/Part2/the phonebook\" && npm run build && cp -r dist /Users/rodrigovargas123/Documents/Programacion/Fullstack/Part3"
-
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "install": "^0.13.0",
+    "mongoose": "^7.6.3",
     "morgan": "^1.10.0"
   },
   "devDependencies": {
